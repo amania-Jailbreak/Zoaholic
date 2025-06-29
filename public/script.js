@@ -1,6 +1,35 @@
-
 document.addEventListener('DOMContentLoaded', function() {
     const serverList = document.getElementById('server-list');
+    const clientNameInput = document.getElementById('clientNameInput');
+    const updateClientBtn = document.getElementById('updateClientBtn');
+
+    // Update Client Button Event Listener
+    updateClientBtn.addEventListener('click', async () => {
+        const clientName = clientNameInput.value.trim();
+        if (!clientName) {
+            alert('Please enter a client hostname.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/update/${clientName}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                alert(`Update command sent to ${clientName} successfully!`);
+            } else {
+                const errorText = await response.text();
+                alert(`Failed to send update command to ${clientName}: ${errorText}`);
+            }
+        } catch (error) {
+            console.error('Error sending update command:', error);
+            alert(`An error occurred while sending update command: ${error.message}`);
+        }
+    });
 
     function updateServerList(data) {
         serverList.innerHTML = '';

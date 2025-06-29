@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,6 +18,18 @@
 
     <div class="container mx-auto mt-12 p-4">
         <h1 class="text-4xl font-bold text-white mb-8 text-center">Dashboard</h1>
+
+        <div class="bg-gray-800 rounded-xl shadow-2xl p-6 mb-8">
+            <h2 class="text-2xl font-bold text-white mb-4">Operations</h2>
+            <div class="flex flex-wrap items-center gap-4">
+                <input type="text" id="clientNameInput" placeholder="Client Hostname" class="flex-grow p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="updateClientBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105">
+                    Update Client
+                </button>
+                <!-- 他の操作ボタンをここに追加できます -->
+            </div>
+        </div>
+
         <div id="server-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <!-- Server cards will be dynamically added here -->
         </div>
