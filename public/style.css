@@ -1,0 +1,16 @@
+
+body {
+    background-color: #f4f4f4;
+}
+
+.brand-logo {
+    padding-left: 15px;
+}
+
+#server-list {
+    margin-top: 20px;
+}
+
+.card {
+    margin-bottom: 20px;
+}
