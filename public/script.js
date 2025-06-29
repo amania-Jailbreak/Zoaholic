@@ -1,69 +1,78 @@
-
 document.addEventListener('DOMContentLoaded', function() {
     const serverList = document.getElementById('server-list');
-    const serverCharts = {}; // 各サーバーのChartインスタンスを保持
+    const serverDataHistory = {}; // 各サーバーのデータ履歴を保持
+    const MAX_HISTORY_POINTS = 10; // 履歴の最大点数
 
-    function createChart(canvasId, label, data, borderColor) {
-        const ctx = document.getElementById(canvasId).getContext('2d');
-        return new Chart(ctx, {
-            type: 'line',
+    function createC3Chart(bindtoId, label, color) {
+        return c3.generate({
+            bindto: `#${bindtoId}`,
             data: {
-                labels: Array(10).fill(''), // 過去10点のデータを表示
-                datasets: [{
-                    label: label,
-                    data: data,
-                    borderColor: borderColor,
-                    tension: 0.1,
-                    fill: false
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100 // 使用率なので最大100
-                    },
-                    x: {
-                        type: 'category', // X軸をカテゴリとして扱う
-                        ticks: {
-                            autoSkip: false // ティックをスキップしない
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    }
+                columns: [
+                    [label]
+                ],
+                type: 'line',
+                colors: {
+                    [label]: color
                 }
+            },
+            axis: {
+                x: {
+                    type: 'category',
+                    show: false // X軸のラベルは非表示
+                },
+                y: {
+                    min: 0,
+                    max: 100,
+                    padding: { top: 0, bottom: 0 },
+                    tick: { format: function (d) { return d + '%'; } }
+                }
+            },
+            point: {
+                show: false // データポイントを非表示
+            },
+            legend: {
+                show: false // 凡例を非表示
+            },
+            tooltip: {
+                show: false // ツールチップを非表示
+            },
+            size: {
+                height: 150 // グラフの高さ
             }
         });
     }
 
-    function updateChart(chart, newData) {
-        chart.data.labels.push(''); // 新しいラベルを追加
-        chart.data.datasets[0].data.push(newData);
-
-        // 過去10点のみを保持
-        if (chart.data.labels.length > 10) {
-            chart.data.labels.shift();
-            chart.data.datasets[0].data.shift();
+    function updateC3Chart(chart, label, newData) {
+        let history = serverDataHistory[chart.element.id] || [];
+        history.push(newData);
+        if (history.length > MAX_HISTORY_POINTS) {
+            history.shift();
         }
-        chart.update();
+        serverDataHistory[chart.element.id] = history;
+
+        chart.load({
+            columns: [
+                [label, ...history]
+            ]
+        });
     }
 
     function updateServerList(data) {
-        serverList.innerHTML = '';
-        if (data.length === 0) {
-            serverList.innerHTML = '<p>No servers connected.</p>';
-            return;
-        }
+        // 既存のサーバーカードを削除せずに更新するために、Mapを使用
+        const existingCards = new Map();
+        serverList.querySelectorAll('.card').forEach(card => {
+            const serverName = card.querySelector('.card-title').textContent;
+            existingCards.set(serverName, card);
+        });
 
         data.forEach(server => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            
+            let card = existingCards.get(server.name);
+            if (!card) {
+                card = document.createElement('div');
+                card.className = 'card';
+                serverList.appendChild(card);
+            }
+
             let statusColor = '';
             switch(server.status) {
                 case 'Online':
@@ -85,49 +94,57 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="row">
                         <div class="col s6">
                             <h6>CPU Usage (%)</h6>
-                            <div class="chart-container"><canvas id="cpuChart-${server.name}"></canvas></div>
+                            <div id="cpuChart-${server.name}" class="chart-container"></div>
                         </div>
                         <div class="col s6">
                             <h6>Memory Usage (%)</h6>
-                            <div class="chart-container"><canvas id="memChart-${server.name}"></canvas></div>
+                            <div id="memChart-${server.name}" class="chart-container"></div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col s6">
                             <h6>Disk Usage (%)</h6>
-                            <div class="chart-container"><canvas id="diskChart-${server.name}"></canvas></div>
+                            <div id="diskChart-${server.name}" class="chart-container"></div>
                         </div>
                         <div class="col s6">
                             <h6>Network (Rx/Tx KB/s)</h6>
-                            <div class="chart-container"><canvas id="netChart-${server.name}"></canvas></div>
+                            <div id="netChart-${server.name}" class="chart-container"></div>
                         </div>
                     </div>
                 </div>
             `;
-            serverList.appendChild(card);
 
-            // Chartの初期化または更新
+            // C3.js Chartの初期化
             if (!serverCharts[server.name]) {
                 serverCharts[server.name] = {
-                    cpu: createChart(`cpuChart-${server.name}`, 'CPU', [], '#4CAF50'),
-                    mem: createChart(`memChart-${server.name}`, 'Memory', [], '#2196F3'),
-                    disk: createChart(`diskChart-${server.name}`, 'Disk', [], '#FFC107'),
-                    net: createChart(`netChart-${server.name}`, 'Network', [], '#9C27B0')
+                    cpu: createC3Chart(`cpuChart-${server.name}`, 'CPU', '#4CAF50'),
+                    mem: createC3Chart(`memChart-${server.name}`, 'Memory', '#2196F3'),
+                    disk: createC3Chart(`diskChart-${server.name}`, 'Disk', '#FFC107'),
+                    net: createC3Chart(`netChart-${server.name}`, 'Network', '#9C27B0')
                 };
             }
 
             // データがある場合のみ更新
             if (server.systemInfo) {
-                updateChart(serverCharts[server.name].cpu, parseFloat(server.systemInfo.cpu));
-                updateChart(serverCharts[server.name].mem, parseFloat(server.systemInfo.mem));
-                updateChart(serverCharts[server.name].disk, parseFloat(server.systemInfo.disk));
-                // ネットワークはRxとTxを合計して表示
+                updateC3Chart(serverCharts[server.name].cpu, 'CPU', parseFloat(server.systemInfo.cpu));
+                updateC3Chart(serverCharts[server.name].mem, 'Memory', parseFloat(server.systemInfo.mem));
+                updateC3Chart(serverCharts[server.name].disk, 'Disk', parseFloat(server.systemInfo.disk));
                 const netTotal = (parseFloat(server.systemInfo.net.rx) + parseFloat(server.systemInfo.net.tx)) / 1024; // KB/sに変換
-                updateChart(serverCharts[server.name].net, netTotal.toFixed(2));
+                updateC3Chart(serverCharts[server.name].net, 'Network', netTotal.toFixed(2));
+            }
+        });
+
+        // 切断されたサーバーを削除
+        existingCards.forEach((card, name) => {
+            if (!data.some(s => s.name === name)) {
+                card.remove();
+                delete serverCharts[name];
+                delete serverDataHistory[name];
             }
         });
     }
 
+    // WebSocket接続ロジックは変更なし
     function connect() {
         const ws = new WebSocket(`ws://${window.location.host}?type=ui`);
 
