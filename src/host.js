@@ -1,3 +1,4 @@
+
 const express = require('express');
 const http = require('http');
 const path = require('path');
@@ -17,7 +18,7 @@ const uiClients = new Set();
 // サーバーの状態を保持するMap
 const serverStatus = new Map();
 
-function broadcastToUI(data) {
+function broadcastToUI() {
     const jsonData = JSON.stringify(Array.from(serverStatus.values()));
     uiClients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
@@ -27,59 +28,70 @@ function broadcastToUI(data) {
 }
 
 wss.on('connection', (ws, req) => {
-    // 接続元を区別する（例：URLのクエリパラメータを使用）
     const clientType = new URL(req.url, `http://${req.headers.host}`).searchParams.get('type');
 
     if (clientType === 'ui') {
-        console.log('WebUI client connected');
+        console.log('[Host] WebUI client connected');
         uiClients.add(ws);
         
         // 接続時に現在のサーバーリストを送信
         ws.send(JSON.stringify(Array.from(serverStatus.values())));
 
         ws.on('close', () => {
-            console.log('WebUI client disconnected');
+            console.log('[Host] WebUI client disconnected');
             uiClients.delete(ws);
         });
 
     } else { // Zoaholicクライアント
-        console.log('Zoaholic client connected');
         let clientId = null;
+        console.log('[Host] Zoaholic client connected');
 
         ws.on('message', (message) => {
             try {
                 const data = JSON.parse(message);
-                clientId = data.name; // クライアントの識別に名前を使用
-                console.log(`Message from ${clientId}:`, data);
-                
-                // サーバーの状態を更新
-                serverStatus.set(clientId, data);
-                
-                // 更新を全WebUIにブロードキャスト
-                broadcastToUI();
+                if (data.name) {
+                    clientId = data.name; // クライアントの識別に名前を使用
+                    console.log(`[Host] Message from ${clientId}:`, data);
+                    
+                    // サーバーの状態を更新
+                    serverStatus.set(clientId, data);
+                    
+                    // 更新を全WebUIにブロードキャスト
+                    broadcastToUI();
+                } else {
+                    console.warn('[Host] Received message without client name:', data);
+                }
 
             } catch (error) {
-                console.error('Failed to parse message:', message, error);
+                console.error('[Host] Failed to parse message:', message, error);
             }
         });
 
         ws.on('close', () => {
-            console.log(`Zoaholic client ${clientId} disconnected`);
             if (clientId) {
-                serverStatus.delete(clientId);
+                console.log(`[Host] Zoaholic client ${clientId} disconnected`);
+                // クライアントが切断されたらステータスをOfflineに更新
+                const disconnectedClient = serverStatus.get(clientId);
+                if (disconnectedClient) {
+                    disconnectedClient.status = 'Offline';
+                    disconnectedClient.log = 'Client disconnected.';
+                    serverStatus.set(clientId, disconnectedClient);
+                }
                 // 更新を全WebUIにブロードキャスト
                 broadcastToUI();
+            } else {
+                console.log('[Host] An unknown Zoaholic client disconnected');
             }
         });
     }
 
     ws.on('error', (error) => {
-        console.error('WebSocket error:', error);
+        console.error('[Host] WebSocket error:', error.message);
     });
 });
 
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
-    console.log(`Server started on port ${PORT}`);
-    console.log(`WebUI available at http://localhost:${PORT}`);
+    console.log(`[Host] Server started on port ${PORT}`);
+    console.log(`[Host] WebUI available at http://localhost:${PORT}`);
 });

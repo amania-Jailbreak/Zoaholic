@@ -1,42 +1,47 @@
-
 const WebSocket = require('ws');
 
 const HOST_URL = 'ws://localhost:8080';
 const CLIENT_NAME = `Client-${Math.random().toString(36).substring(2, 7)}`;
 
-function connect() {
-    // Zoaholicクライアントとして接続
-    const ws = new WebSocket(HOST_URL);
+let ws = null;
+let reconnectInterval = 1000; // 1秒から開始
+const maxReconnectInterval = 30000; // 最大30秒
 
-    ws.on('open', () => {
-        console.log(`Connected to host as ${CLIENT_NAME}`);
+function connect() {
+    ws = new WebSocket(HOST_URL);
+
+    ws.onopen = () => {
+        console.log(`[Client] Connected to host as ${CLIENT_NAME}`);
+        reconnectInterval = 1000; // 接続成功したらリセット
         
         // 5秒ごとに自身の状態を送信する
         setInterval(() => {
             const message = {
                 name: CLIENT_NAME,
                 status: 'Online', // 'Offline', 'Warning' など
-                log: `All systems normal. Timestamp: ${new Date().toLocaleTimeString()}`,
+                log: `[INFO] Client ${CLIENT_NAME} is running. Uptime: ${process.uptime().toFixed(2)}s`,
+                timestamp: new Date().toISOString()
             };
             ws.send(JSON.stringify(message));
         }, 5000);
-    });
+    };
 
-    ws.on('message', (message) => {
-        console.log(`Message from host: ${message}`);
-    });
+    ws.onmessage = (message) => {
+        console.log(`[Client] Message from host: ${message.data}`);
+    };
 
-    ws.on('close', () => {
-        console.log('Disconnected from host. Reconnecting...');
-        setTimeout(connect, 3000);
-    });
+    ws.onclose = () => {
+        console.log(`[Client] Disconnected from host. Reconnecting in ${reconnectInterval / 1000}s...`);
+        setTimeout(connect, reconnectInterval);
+        reconnectInterval = Math.min(reconnectInterval * 2, maxReconnectInterval); // 指数関数的に増加
+    };
 
-    ws.on('error', (error) => {
-        console.error('WebSocket error:', error.message);
-        ws.close();
-    });
+    ws.onerror = (error) => {
+        console.error(`[Client] WebSocket error for ${CLIENT_NAME}:`, error.message);
+        ws.close(); // エラー発生時はクローズして再接続を試みる
+    };
 }
 
 connect();
 
-console.log(`Starting ${CLIENT_NAME}...`);
+console.log(`[Client] Starting ${CLIENT_NAME}...`);
