@@ -1,37 +1,42 @@
-
 document.addEventListener('DOMContentLoaded', function() {
     const serverList = document.getElementById('server-list');
 
     function updateServerList(data) {
         serverList.innerHTML = '';
         if (data.length === 0) {
-            serverList.innerHTML = '<p>No servers connected.</p>';
+            serverList.innerHTML = '<p class="text-gray-600">No servers connected.</p>';
             return;
         }
 
         data.forEach(server => {
             const card = document.createElement('div');
-            card.className = 'card';
+            card.className = 'bg-white rounded-lg shadow-md p-6';
             
-            let statusColor = '';
+            let statusColor = 'text-gray-600';
             switch(server.status) {
                 case 'Online':
-                    statusColor = 'green-text';
+                    statusColor = 'text-green-500';
                     break;
                 case 'Offline':
-                    statusColor = 'red-text';
+                    statusColor = 'text-red-500';
                     break;
                 case 'Warning':
-                    statusColor = 'orange-text';
+                    statusColor = 'text-yellow-500';
                     break;
             }
 
             card.innerHTML = `
-                <div class="card-content">
-                    <span class="card-title">${server.name}</span>
-                    <p>Status: <strong class="${statusColor}">${server.status}</strong></p>
-                    <p>Log: ${server.log}</p>
-                </div>
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">${server.name}</h2>
+                <p class="text-gray-700 mb-1">Status: <strong class="${statusColor}">${server.status}</strong></p>
+                <p class="text-gray-700 mb-4">Log: ${server.log}</p>
+                ${server.systemInfo ? `
+                    <div class="grid grid-cols-2 gap-4 text-sm text-gray-700">
+                        <div><strong>CPU:</strong> ${server.systemInfo.cpu}%</div>
+                        <div><strong>Memory:</strong> ${server.systemInfo.mem}%</div>
+                        <div><strong>Disk:</strong> ${server.systemInfo.disk}%</div>
+                        <div><strong>Network:</strong> Rx ${server.systemInfo.net.rx ? (server.systemInfo.net.rx / 1024).toFixed(2) : 'N/A'} KB/s / Tx ${server.systemInfo.net.tx ? (server.systemInfo.net.tx / 1024).toFixed(2) : 'N/A'} KB/s</div>
+                    </div>
+                ` : ''}
             `;
             serverList.appendChild(card);
         });
