@@ -1,4 +1,6 @@
+
 const WebSocket = require('ws');
+const si = require('systeminformation');
 
 const HOST_URL = 'ws://localhost:8080';
 const CLIENT_NAME = `Client-${Math.random().toString(36).substring(2, 7)}`;
@@ -7,6 +9,20 @@ let ws = null;
 let reconnectInterval = 1000; // 1秒から開始
 const maxReconnectInterval = 30000; // 最大30秒
 
+async function getSystemInfo() {
+    const cpu = await si.currentLoad();
+    const mem = await si.mem();
+    const fsSize = await si.fsSize();
+    const netStats = await si.networkStats();
+
+    return {
+        cpu: cpu.currentLoad.toFixed(2),
+        mem: ((mem.used / mem.total) * 100).toFixed(2),
+        disk: fsSize.length > 0 ? ((fsSize[0].used / fsSize[0].size) * 100).toFixed(2) : 'N/A',
+        net: netStats.length > 0 ? { rx: netStats[0].rx_sec, tx: netStats[0].tx_sec } : 'N/A'
+    };
+}
+
 function connect() {
     ws = new WebSocket(HOST_URL);
 
@@ -14,13 +30,15 @@ function connect() {
         console.log(`[Client] Connected to host as ${CLIENT_NAME}`);
         reconnectInterval = 1000; // 接続成功したらリセット
         
-        // 5秒ごとに自身の状態を送信する
-        setInterval(() => {
+        // 5秒ごとに自身の状態とシステム情報を送信する
+        setInterval(async () => {
+            const systemInfo = await getSystemInfo();
             const message = {
                 name: CLIENT_NAME,
-                status: 'Online', // 'Offline', 'Warning' など
+                status: 'Online',
                 log: `[INFO] Client ${CLIENT_NAME} is running. Uptime: ${process.uptime().toFixed(2)}s`,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                systemInfo: systemInfo
             };
             ws.send(JSON.stringify(message));
         }, 5000);

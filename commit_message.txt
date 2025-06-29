@@ -1,1 +1,1 @@
-Initial commit: Add host/client prototype and basic web UI
+[修正] npm start コマンドのエラーを修正
