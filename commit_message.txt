@@ -1,1 +1,1 @@
-[修正] npm start コマンドのエラーを修正
+[バグ修正] グラフが表示されないReferenceErrorを修正
