@@ -1,13 +1,30 @@
+
 const WebSocket = require('ws');
 const si = require('systeminformation');
-const os = require('os'); // osモジュールをインポート
+const os = require('os');
 
 const HOST_URL = 'ws://localhost:8080';
-const CLIENT_NAME = os.hostname(); // ホスト名を使用
+const CLIENT_NAME = os.hostname();
 
 let ws = null;
-let reconnectInterval = 1000; // 1秒から開始
-const maxReconnectInterval = 30000; // 最大30秒
+let reconnectInterval = 1000;
+const maxReconnectInterval = 30000;
+
+let currentMode = 'Client'; // 初期モード
+
+// コマンドライン引数でモードをチェック
+if (process.argv.includes('--mode') && process.argv[process.argv.indexOf('--mode') + 1] === 'rescue') {
+    currentMode = 'Rescue';
+    console.log('[Client] Starting in Rescue Mode...');
+    // レスキューモードのシミュレーション
+    setTimeout(() => {
+        console.log('[Client] Simulating configuration reset...');
+        console.log('[Client] Simulating fetching stable release from GitHub...');
+        console.log('[Client] Rescue Mode completed. Please restart in Client Mode.');
+        // 実際にはここでプロセスを終了するか、Clientモードに移行する
+        // process.exit(0);
+    }, 5000);
+}
 
 async function getSystemInfo() {
     const cpu = await si.currentLoad();
@@ -27,8 +44,8 @@ function connect() {
     ws = new WebSocket(HOST_URL);
 
     ws.onopen = () => {
-        console.log(`[Client] Connected to host as ${CLIENT_NAME}`);
-        reconnectInterval = 1000; // 接続成功したらリセット
+        console.log(`[Client] Connected to host as ${CLIENT_NAME} in ${currentMode} Mode`);
+        reconnectInterval = 1000;
         
         // 5秒ごとに自身の状態とシステム情報を送信する
         setInterval(async () => {
@@ -38,28 +55,56 @@ function connect() {
                 status: 'Online',
                 log: `[INFO] Client ${CLIENT_NAME} is running. Uptime: ${process.uptime().toFixed(2)}s`,
                 timestamp: new Date().toISOString(),
-                systemInfo: systemInfo
+                systemInfo: systemInfo,
+                mode: currentMode // 現在のモードを送信
             };
             ws.send(JSON.stringify(message));
         }, 5000);
     };
 
-    ws.onmessage = (message) => {
+    ws.onmessage = async (message) => {
         console.log(`[Client] Message from host: ${message.data}`);
+        try {
+            const command = JSON.parse(message.data);
+            if (command.type === 'command' && command.command === 'update') {
+                console.log('[Client] Received update command. Entering Update Mode...');
+                currentMode = 'Update';
+                // アップデートプロセスのシミュレーション
+                setTimeout(() => {
+                    console.log('[Client] Simulating update download...');
+                    console.log('[Client] Simulating update application...');
+                    const updateSuccess = Math.random() > 0.2; // 80%の確率で成功
+                    if (updateSuccess) {
+                        console.log('[Client] Update successful. Returning to Client Mode.');
+                        currentMode = 'Client';
+                    } else {
+                        console.log('[Client] Update failed. Restoring from backup...');
+                        console.log('[Client] Restoration successful. Returning to Client Mode.');
+                        currentMode = 'Client';
+                    }
+                    // ホストにアップデート結果を通知するロジックを追加することも可能
+                }, 7000); // 7秒後に完了
+            }
+        } catch (error) {
+            console.error('[Client] Failed to parse command from host:', error);
+        }
     };
 
     ws.onclose = () => {
         console.log(`[Client] Disconnected from host. Reconnecting in ${reconnectInterval / 1000}s...`);
         setTimeout(connect, reconnectInterval);
-        reconnectInterval = Math.min(reconnectInterval * 2, maxReconnectInterval); // 指数関数的に増加
+        reconnectInterval = Math.min(reconnectInterval * 2, maxReconnectInterval);
     };
 
     ws.onerror = (error) => {
         console.error(`[Client] WebSocket error for ${CLIENT_NAME}:`, error.message);
-        ws.close(); // エラー発生時はクローズして再接続を試みる
+        ws.close();
     };
 }
 
-connect();
+// レスキューモードでない場合のみ接続を開始
+if (currentMode !== 'Rescue') {
+    connect();
+}
 
 console.log(`[Client] Starting ${CLIENT_NAME}...`);

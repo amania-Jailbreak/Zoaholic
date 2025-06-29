@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function() {
     const serverList = document.getElementById('server-list');
 
@@ -29,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
             card.innerHTML = `
                 <h2 class="text-3xl font-extrabold text-white mb-4">${server.name}</h2>
                 <p class="text-gray-300 text-lg mb-2">Status: <strong class="${statusColor}">${server.status}</strong></p>
+                <p class="text-gray-300 text-lg mb-2">Mode: <strong class="text-blue-400">${server.mode || 'N/A'}</strong></p>
                 <p class="text-gray-400 text-base mb-6">Log: ${server.log}</p>
                 ${server.systemInfo ? `
                     <div class="grid grid-cols-2 gap-y-3 gap-x-6 text-base text-gray-300">

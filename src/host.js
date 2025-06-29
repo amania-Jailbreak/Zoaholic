@@ -1,8 +1,10 @@
+
+
 const express = require('express');
 const http = require('http');
 const path = require('path');
 const WebSocket = require('ws');
-const fs = require('fs'); // fsモジュールをインポート
+const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
@@ -24,6 +26,8 @@ const wss = new WebSocket.Server({ server });
 
 // 接続されているWebUIクライアントを保持するSet
 const uiClients = new Set();
+// 接続されているZoaholicクライアントのWebSocketを保持するMap
+const zoaholicClients = new Map(); // Key: clientId, Value: WebSocket
 // サーバーの状態を保持するMap
 const serverStatus = new Map();
 
@@ -60,6 +64,7 @@ wss.on('connection', (ws, req) => {
                 const data = JSON.parse(message);
                 if (data.name) {
                     clientId = data.name; // クライアントの識別に名前を使用
+                    zoaholicClients.set(clientId, ws); // WebSocketを保存
                     console.log(`[Host] Message from ${clientId}:`, data);
                     
                     // サーバーの状態を更新
@@ -87,11 +92,13 @@ wss.on('connection', (ws, req) => {
         ws.on('close', () => {
             if (clientId) {
                 console.log(`[Host] Zoaholic client ${clientId} disconnected`);
+                zoaholicClients.delete(clientId); // WebSocketを削除
                 // クライアントが切断されたらステータスをOfflineに更新
                 const disconnectedClient = serverStatus.get(clientId);
                 if (disconnectedClient) {
                     disconnectedClient.status = 'Offline';
                     disconnectedClient.log = 'Client disconnected.';
+                    disconnectedClient.mode = 'Offline'; // モードもOfflineに
                     serverStatus.set(clientId, disconnectedClient);
                 }
                 // 更新を全WebUIにブロードキャスト
@@ -107,8 +114,29 @@ wss.on('connection', (ws, req) => {
     });
 });
 
+// アップデートトリガー用のHTTPエンドポイント
+app.post('/update/:clientName', (req, res) => {
+    const clientName = req.params.clientName;
+    const clientWs = zoaholicClients.get(clientName);
+
+    if (clientWs && clientWs.readyState === WebSocket.OPEN) {
+        const updateCommand = {
+            type: 'command',
+            command: 'update',
+            payload: { message: `Update requested for ${clientName}` }
+        };
+        clientWs.send(JSON.stringify(updateCommand));
+        res.status(200).send(`Update command sent to ${clientName}`);
+        console.log(`[Host] Update command sent to ${clientName}`);
+    } else {
+        res.status(404).send(`Client ${clientName} not found or not connected.`);
+        console.warn(`[Host] Failed to send update command: Client ${clientName} not found or not connected.`);
+    }
+});
+
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
     console.log(`[Host] Server started on port ${PORT}`);
     console.log(`[Host] WebUI available at http://localhost:${PORT}`);
+    console.log(`[Host] To trigger update: POST http://localhost:${PORT}/update/:clientName`);
 });
