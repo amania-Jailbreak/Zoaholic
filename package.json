@@ -4,10 +4,10 @@
   "description": "-   名前: Zoaholic\r -   フレームワーク・言語: Node.js, OpenAPI, REST API",
   "main": "index.js",
   "scripts": {
-    "start": "concurrently \"npm:server\" \"npm:start:ui\"",
+    "start": "npm run server",
     "server": "node src/host.js",
     "client": "node src/client.js",
-    "start:ui": "npm start --prefix public",
+    "start:ui": "echo \"UI is served by the host server.\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
