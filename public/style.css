@@ -1,3 +1,4 @@
+
 body {
     background-color: #f0f2f5; /* より明るい背景色 */
     font-family: 'Roboto', sans-serif; /* フォントの変更 */
@@ -9,34 +10,51 @@ body {
 }
 
 .nav-wrapper {
-    background-color: #2196F3; /* ナビゲーションバーの色 */
+    background-color: #673AB7; /* Material You風の深い紫色 */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* 柔らかい影 */
 }
 
 .container {
-    margin-top: 20px;
+    margin-top: 30px; /* 上部の余白を増やす */
 }
 
 .card {
-    margin-bottom: 20px;
-    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2); /* 影を強調 */
-    border-radius: 8px; /* 角を丸くする */
+    margin-bottom: 25px; /* カード間の余白を増やす */
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15); /* より柔らかく、奥行きのある影 */
+    border-radius: 16px; /* 角をより丸くする */
+    transition: transform 0.2s ease-in-out; /* ホバーエフェクト */
+}
+
+.card:hover {
+    transform: translateY(-5px); /* 少し浮き上がる */
 }
 
 .card .card-content {
-    padding: 24px;
+    padding: 28px; /* パディングを増やす */
 }
 
 .card .card-title {
-    font-size: 1.8rem;
+    font-size: 2rem; /* タイトルを少し大きく */
     font-weight: 500;
+    margin-bottom: 15px;
+    color: #333; /* タイトル色を調整 */
+}
+
+h6 {
+    font-weight: 400;
+    color: #555;
     margin-bottom: 10px;
 }
 
 .chart-container {
     position: relative;
-    height: 150px; /* グラフの固定高さ */
+    height: 180px; /* グラフの高さを少し増やす */
     width: 100%;
-    margin-top: 10px;
+    margin-top: 15px;
+    background-color: #fff; /* グラフ背景を白に */
+    border-radius: 12px; /* グラフコンテナも丸く */
+    padding: 10px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); /* わずかな内側の影 */
 }
 
 canvas {
