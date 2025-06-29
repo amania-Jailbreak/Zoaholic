@@ -1,5 +1,3 @@
-
-
 const express = require('express');
 const http = require('http');
 const path = require('path');
@@ -124,6 +122,7 @@ app.use(express.json());
 
 // アップデートトリガー用のHTTPエンドポイント
 app.post('/update/:clientName', (req, res) => {
+    console.log('[Host] Received update request. req.body:', req.body); // デバッグログを追加
     const clientName = req.params.clientName;
     const clientWs = zoaholicClients.get(clientName);
     const { repoUrl, files } = req.body; // リクエストボディからrepoUrlとfilesを取得
