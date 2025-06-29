@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const serverList = document.getElementById('server-list');
     const serverDataHistory = {}; // 各サーバーのデータ履歴を保持
+    const serverCharts = {}; // 各サーバーのC3.js Chartインスタンスを保持
     const MAX_HISTORY_POINTS = 10; // 履歴の最大点数
 
     function createC3Chart(bindtoId, label, color) {
