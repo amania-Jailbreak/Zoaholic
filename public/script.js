@@ -1,40 +1,41 @@
+
 document.addEventListener('DOMContentLoaded', function() {
     const serverList = document.getElementById('server-list');
 
     function updateServerList(data) {
         serverList.innerHTML = '';
         if (data.length === 0) {
-            serverList.innerHTML = '<p class="text-gray-600">No servers connected.</p>';
+            serverList.innerHTML = '<p class="text-gray-400 text-center col-span-full">No servers connected.</p>';
             return;
         }
 
         data.forEach(server => {
             const card = document.createElement('div');
-            card.className = 'bg-white rounded-lg shadow-md p-6';
+            card.className = 'bg-gray-800 rounded-xl shadow-2xl p-8 transform transition-all duration-300 hover:scale-105 hover:shadow-3xl';
             
-            let statusColor = 'text-gray-600';
+            let statusColor = 'text-gray-400';
             switch(server.status) {
                 case 'Online':
-                    statusColor = 'text-green-500';
+                    statusColor = 'text-green-400';
                     break;
                 case 'Offline':
-                    statusColor = 'text-red-500';
+                    statusColor = 'text-red-400';
                     break;
                 case 'Warning':
-                    statusColor = 'text-yellow-500';
+                    statusColor = 'text-yellow-400';
                     break;
             }
 
             card.innerHTML = `
-                <h2 class="text-xl font-semibold text-gray-800 mb-2">${server.name}</h2>
-                <p class="text-gray-700 mb-1">Status: <strong class="${statusColor}">${server.status}</strong></p>
-                <p class="text-gray-700 mb-4">Log: ${server.log}</p>
+                <h2 class="text-3xl font-extrabold text-white mb-4">${server.name}</h2>
+                <p class="text-gray-300 text-lg mb-2">Status: <strong class="${statusColor}">${server.status}</strong></p>
+                <p class="text-gray-400 text-base mb-6">Log: ${server.log}</p>
                 ${server.systemInfo ? `
-                    <div class="grid grid-cols-2 gap-4 text-sm text-gray-700">
-                        <div><strong>CPU:</strong> ${server.systemInfo.cpu}%</div>
-                        <div><strong>Memory:</strong> ${server.systemInfo.mem}%</div>
-                        <div><strong>Disk:</strong> ${server.systemInfo.disk}%</div>
-                        <div><strong>Network:</strong> Rx ${server.systemInfo.net.rx ? (server.systemInfo.net.rx / 1024).toFixed(2) : 'N/A'} KB/s / Tx ${server.systemInfo.net.tx ? (server.systemInfo.net.tx / 1024).toFixed(2) : 'N/A'} KB/s</div>
+                    <div class="grid grid-cols-2 gap-y-3 gap-x-6 text-base text-gray-300">
+                        <div><strong class="text-gray-200">CPU:</strong> ${server.systemInfo.cpu}%</div>
+                        <div><strong class="text-gray-200">Memory:</strong> ${server.systemInfo.mem}%</div>
+                        <div><strong class="text-gray-200">Disk:</strong> ${server.systemInfo.disk}%</div>
+                        <div><strong class="text-gray-200">Network:</strong> Rx ${server.systemInfo.net.rx ? (server.systemInfo.net.rx / 1024).toFixed(2) : 'N/A'} KB/s / Tx ${server.systemInfo.net.tx ? (server.systemInfo.net.tx / 1024).toFixed(2) : 'N/A'} KB/s</div>
                     </div>
                 ` : ''}
             `;
