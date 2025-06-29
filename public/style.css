@@ -1,16 +1,56 @@
-
 body {
-    background-color: #f4f4f4;
+    background-color: #f0f2f5; /* より明るい背景色 */
+    font-family: 'Roboto', sans-serif; /* フォントの変更 */
 }
 
 .brand-logo {
     padding-left: 15px;
+    font-weight: 500; /* 少し太めのフォント */
 }
 
-#server-list {
+.nav-wrapper {
+    background-color: #2196F3; /* ナビゲーションバーの色 */
+}
+
+.container {
     margin-top: 20px;
 }
 
 .card {
     margin-bottom: 20px;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2); /* 影を強調 */
+    border-radius: 8px; /* 角を丸くする */
+}
+
+.card .card-content {
+    padding: 24px;
+}
+
+.card .card-title {
+    font-size: 1.8rem;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.chart-container {
+    position: relative;
+    height: 150px; /* グラフの固定高さ */
+    width: 100%;
+    margin-top: 10px;
+}
+
+canvas {
+    max-height: 100%;
+    max-width: 100%;
+}
+
+/* テキストの色 */
+.green-text {
+    color: #4CAF50 !important;
+}
+.red-text {
+    color: #F44336 !important;
+}
+.orange-text {
+    color: #FF9800 !important;
 }

@@ -85,21 +85,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="row">
                         <div class="col s6">
                             <h6>CPU Usage (%)</h6>
-                            <canvas id="cpuChart-${server.name}" height="100"></canvas>
+                            <div class="chart-container"><canvas id="cpuChart-${server.name}"></canvas></div>
                         </div>
                         <div class="col s6">
                             <h6>Memory Usage (%)</h6>
-                            <canvas id="memChart-${server.name}" height="100"></canvas>
+                            <div class="chart-container"><canvas id="memChart-${server.name}"></canvas></div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col s6">
                             <h6>Disk Usage (%)</h6>
-                            <canvas id="diskChart-${server.name}" height="100"></canvas>
+                            <div class="chart-container"><canvas id="diskChart-${server.name}"></canvas></div>
                         </div>
                         <div class="col s6">
                             <h6>Network (Rx/Tx KB/s)</h6>
-                            <canvas id="netChart-${server.name}" height="100"></canvas>
+                            <div class="chart-container"><canvas id="netChart-${server.name}"></canvas></div>
                         </div>
                     </div>
                 </div>
