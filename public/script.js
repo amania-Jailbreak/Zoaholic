@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', function() {
     const serverList = document.getElementById('server-list');
     const clientNameInput = document.getElementById('clientNameInput');
@@ -11,12 +12,20 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        // ここにGitHubリポジトリのURLと更新するファイルを指定
+        const repoUrl = 'https://github.com/amania-Jailbreak/Zoaholic'; // あなたのGitHubリポジトリURL
+        const filesToUpdate = [
+            { sourcePath: 'README.md', targetPath: 'README.md' }, // 例: リポジトリのREADME.mdを更新
+            // { sourcePath: 'src/client.js', targetPath: 'src/client.js' } // 例: クライアントのコードを更新
+        ];
+
         try {
             const response = await fetch(`/update/${clientName}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                }
+                },
+                body: JSON.stringify({ repoUrl: repoUrl, files: filesToUpdate })
             });
 
             if (response.ok) {
