@@ -24,6 +24,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     y: {
                         beginAtZero: true,
                         max: 100 // 使用率なので最大100
+                    },
+                    x: {
+                        type: 'category', // X軸をカテゴリとして扱う
+                        ticks: {
+                            autoSkip: false // ティックをスキップしない
+                        }
                     }
                 },
                 plugins: {
