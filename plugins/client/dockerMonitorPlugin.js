@@ -5,7 +5,7 @@ const { exec } = require('child_process');
 module.exports = {
     name: 'DockerMonitorPlugin',
     init: function(clientWs) {
-        console.log(`[Plugin] ${this.name} initialized on client.`);
+        // console.log(`[Plugin] ${this.name} initialized on client.`); // ログを削除
 
         const fetchDockerContainers = () => {
             exec('docker ps -a --format "{{json .}}"', (error, stdout, stderr) => {

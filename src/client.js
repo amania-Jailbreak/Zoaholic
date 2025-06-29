@@ -1,8 +1,9 @@
+
 const WebSocket = require('ws');
 const si = require('systeminformation');
 const os = require('os');
-const fs = require('fs'); // fsモジュールをインポート
-const path = require('path'); // pathモジュールをインポート
+const fs = require('fs');
+const path = require('path');
 
 const HOST_URL = 'ws://localhost:8080';
 const CLIENT_NAME = os.hostname();
@@ -45,7 +46,7 @@ function connect() {
     ws = new WebSocket(HOST_URL);
 
     ws.onopen = () => {
-        console.log(`[Client] Connected to host as ${CLIENT_NAME} in ${currentMode} Mode`);
+        // console.log(`[Client] Connected to host as ${CLIENT_NAME} in ${currentMode} Mode`); // ログを削除
         reconnectInterval = 1000;
         
         // 5秒ごとに自身の状態とシステム情報を送信する
@@ -81,7 +82,7 @@ function connect() {
     };
 
     ws.onmessage = async (message) => {
-        console.log(`[Client] Message from host: ${message.data}`);
+        // console.log(`[Client] Message from host: ${message.data}`); // ログを削除
         try {
             const command = JSON.parse(message.data);
             if (command.type === 'command' && command.command === 'update') {
@@ -109,7 +110,7 @@ function connect() {
     };
 
     ws.onclose = () => {
-        console.log(`[Client] Disconnected from host. Reconnecting in ${reconnectInterval / 1000}s...`);
+        // console.log(`[Client] Disconnected from host. Reconnecting in ${reconnectInterval / 1000}s...`); // ログを削除
         setTimeout(connect, reconnectInterval);
         reconnectInterval = Math.min(reconnectInterval * 2, maxReconnectInterval);
     };

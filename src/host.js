@@ -1,5 +1,3 @@
-
-
 const express = require('express');
 const http = require('http');
 const path = require('path');
@@ -44,20 +42,20 @@ wss.on('connection', (ws, req) => {
     const clientType = new URL(req.url, `http://${req.headers.host}`).searchParams.get('type');
 
     if (clientType === 'ui') {
-        console.log('[Host] WebUI client connected');
+        // console.log('[Host] WebUI client connected'); // ログを削除
         uiClients.add(ws);
         
         // 接続時に現在のサーバーリストを送信
         ws.send(JSON.stringify(Array.from(serverStatus.values())));
 
         ws.on('close', () => {
-            console.log('[Host] WebUI client disconnected');
+            // console.log('[Host] WebUI client disconnected'); // ログを削除
             uiClients.delete(ws);
         });
 
     } else { // Zoaholicクライアント
         let clientId = null;
-        console.log('[Host] Zoaholic client connected');
+        // console.log('[Host] Zoaholic client connected'); // ログを削除
 
         ws.on('message', (message) => {
             try {
@@ -72,12 +70,12 @@ wss.on('connection', (ws, req) => {
                         serverStatus.set(data.name, existingStatus);
                         broadcastToUI();
                     }
-                    console.log(`[Host] Plugin data from ${data.name} (${data.pluginName}):`, data.data);
+                    // console.log(`[Host] Plugin data from ${data.name} (${data.pluginName}):`, data.data); // ログを削除
                 } else if (data.name) {
                     // 通常のクライアントステータス
                     clientId = data.name; // クライアントの識別に名前を使用
                     zoaholicClients.set(clientId, ws); // WebSocketを保存
-                    console.log(`[Host] Message from ${clientId}:`, data);
+                    // console.log(`[Host] Message from ${clientId}:`, data); // ログを削除
                     
                     // サーバーの状態を更新
                     serverStatus.set(clientId, data);
@@ -103,7 +101,7 @@ wss.on('connection', (ws, req) => {
 
         ws.on('close', () => {
             if (clientId) {
-                console.log(`[Host] Zoaholic client ${clientId} disconnected`);
+                // console.log(`[Host] Zoaholic client ${clientId} disconnected`); // ログを削除
                 zoaholicClients.delete(clientId); // WebSocketを削除
                 // クライアントが切断されたらステータスをOfflineに更新
                 const disconnectedClient = serverStatus.get(clientId);
@@ -116,7 +114,7 @@ wss.on('connection', (ws, req) => {
                 // 更新を全WebUIにブロードキャスト
                 broadcastToUI();
             } else {
-                console.log('[Host] An unknown Zoaholic client disconnected');
+                // console.log('[Host] An unknown Zoaholic client disconnected'); // ログを削除
             }
         });
     }
