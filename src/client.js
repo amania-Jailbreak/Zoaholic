@@ -3,7 +3,7 @@ const si = require('systeminformation');
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
-const fetch = require('node-fetch'); // node-fetchをインポート
+const fetch = require('node-fetch').default; // node-fetchをインポート
 
 const HOST_URL = 'ws://localhost:8080';
 const CLIENT_NAME = os.hostname();
