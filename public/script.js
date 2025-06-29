@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', function() {
     const serverList = document.getElementById('server-list');
 
@@ -25,6 +26,37 @@ document.addEventListener('DOMContentLoaded', function() {
                     break;
             }
 
+            let dockerContainersHtml = '';
+            if (server.plugins && server.plugins.DockerMonitorPlugin && server.plugins.DockerMonitorPlugin.containers) {
+                dockerContainersHtml = `
+                    <h3 class="text-xl font-semibold text-white mt-6 mb-3">Docker Containers</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-gray-700 rounded-lg">
+                            <thead>
+                                <tr class="text-left text-gray-300">
+                                    <th class="py-2 px-4">Name</th>
+                                    <th class="py-2 px-4">Image</th>
+                                    <th class="py-2 px-4">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                server.plugins.DockerMonitorPlugin.containers.forEach(container => {
+                    dockerContainersHtml += `
+                                <tr class="border-t border-gray-600">
+                                    <td class="py-2 px-4 text-gray-200">${container.Names}</td>
+                                    <td class="py-2 px-4 text-gray-200">${container.Image}</td>
+                                    <td class="py-2 px-4 text-gray-200">${container.Status}</td>
+                                </tr>
+                    `;
+                });
+                dockerContainersHtml += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
             card.innerHTML = `
                 <h2 class="text-3xl font-extrabold text-white mb-4">${server.name}</h2>
                 <p class="text-gray-300 text-lg mb-2">Status: <strong class="${statusColor}">${server.status}</strong></p>
@@ -38,6 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div><strong class="text-gray-200">Network:</strong> Rx ${server.systemInfo.net.rx ? (server.systemInfo.net.rx / 1024).toFixed(2) : 'N/A'} KB/s / Tx ${server.systemInfo.net.tx ? (server.systemInfo.net.tx / 1024).toFixed(2) : 'N/A'} KB/s</div>
                     </div>
                 ` : ''}
+                ${dockerContainersHtml}
             `;
             serverList.appendChild(card);
         });

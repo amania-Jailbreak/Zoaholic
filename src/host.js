@@ -1,3 +1,5 @@
+
+
 const express = require('express');
 const http = require('http');
 const path = require('path');
@@ -60,7 +62,19 @@ wss.on('connection', (ws, req) => {
         ws.on('message', (message) => {
             try {
                 const data = JSON.parse(message);
-                if (data.name) {
+                
+                if (data.type === 'plugin_data') {
+                    // プラグインからのデータ
+                    const existingStatus = serverStatus.get(data.name);
+                    if (existingStatus) {
+                        existingStatus.plugins = existingStatus.plugins || {};
+                        existingStatus.plugins[data.pluginName] = data.data;
+                        serverStatus.set(data.name, existingStatus);
+                        broadcastToUI();
+                    }
+                    console.log(`[Host] Plugin data from ${data.name} (${data.pluginName}):`, data.data);
+                } else if (data.name) {
+                    // 通常のクライアントステータス
                     clientId = data.name; // クライアントの識別に名前を使用
                     zoaholicClients.set(clientId, ws); // WebSocketを保存
                     console.log(`[Host] Message from ${clientId}:`, data);
