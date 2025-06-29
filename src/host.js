@@ -1,5 +1,3 @@
-
-
 const express = require('express');
 const http = require('http');
 const path = require('path');
@@ -99,7 +97,7 @@ wss.on('connection', (ws, req) => {
                     disconnectedClient.status = 'Offline';
                     disconnectedClient.log = 'Client disconnected.';
                     disconnectedClient.mode = 'Offline'; // モードもOfflineに
-                    serverStatus.set(clientId, disconnectedClient);
+                    serverStatus.delete(clientId); // 切断されたクライアントをリストから削除
                 }
                 // 更新を全WebUIにブロードキャスト
                 broadcastToUI();
@@ -133,6 +131,23 @@ app.post('/update/:clientName', (req, res) => {
         console.warn(`[Host] Failed to send update command: Client ${clientName} not found or not connected.`);
     }
 });
+
+// ホストプラグインのロード
+const HOST_PLUGINS_DIR = path.join(__dirname, '..', 'plugins', 'host');
+if (fs.existsSync(HOST_PLUGINS_DIR)) {
+    fs.readdirSync(HOST_PLUGINS_DIR).forEach(file => {
+        if (file.endsWith('.js')) {
+            try {
+                const plugin = require(path.join(HOST_PLUGINS_DIR, file));
+                if (plugin.init && typeof plugin.init === 'function') {
+                    plugin.init(app); // Expressアプリインスタンスを渡す
+                }
+            } catch (error) {
+                console.error(`[Host] Failed to load host plugin ${file}:`, error);
+            }
+        }
+    });
+}
 
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {

@@ -1,7 +1,8 @@
-
 const WebSocket = require('ws');
 const si = require('systeminformation');
 const os = require('os');
+const fs = require('fs'); // fsモジュールをインポート
+const path = require('path'); // pathモジュールをインポート
 
 const HOST_URL = 'ws://localhost:8080';
 const CLIENT_NAME = os.hostname();
@@ -60,6 +61,23 @@ function connect() {
             };
             ws.send(JSON.stringify(message));
         }, 5000);
+
+        // クライアントプラグインのロード
+        const CLIENT_PLUGINS_DIR = path.join(__dirname, '..', 'plugins', 'client');
+        if (fs.existsSync(CLIENT_PLUGINS_DIR)) {
+            fs.readdirSync(CLIENT_PLUGINS_DIR).forEach(file => {
+                if (file.endsWith('.js')) {
+                    try {
+                        const plugin = require(path.join(CLIENT_PLUGINS_DIR, file));
+                        if (plugin.init && typeof plugin.init === 'function') {
+                            plugin.init(ws); // WebSocketインスタンスを渡す
+                        }
+                    } catch (error) {
+                        console.error(`[Client] Failed to load client plugin ${file}:`, error);
+                    }
+                }
+            });
+        }
     };
 
     ws.onmessage = async (message) => {
