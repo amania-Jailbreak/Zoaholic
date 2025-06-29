@@ -1,9 +1,9 @@
-
 const WebSocket = require('ws');
 const si = require('systeminformation');
+const os = require('os'); // osモジュールをインポート
 
 const HOST_URL = 'ws://localhost:8080';
-const CLIENT_NAME = `Client-${Math.random().toString(36).substring(2, 7)}`;
+const CLIENT_NAME = os.hostname(); // ホスト名を使用
 
 let ws = null;
 let reconnectInterval = 1000; // 1秒から開始
