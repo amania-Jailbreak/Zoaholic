@@ -1,8 +1,8 @@
-
 const express = require('express');
 const http = require('http');
 const path = require('path');
 const WebSocket = require('ws');
+const fs = require('fs'); // fsモジュールをインポート
 
 const app = express();
 const server = http.createServer(app);
@@ -10,6 +10,15 @@ const server = http.createServer(app);
 // publicディレクトリの静的ファイルを提供
 const publicPath = path.join(__dirname, '..', 'public');
 app.use(express.static(publicPath));
+
+// ログファイルのパスを設定
+const LOG_DIR = path.join(__dirname, '..', 'logs');
+const CLIENT_LOG_FILE = path.join(LOG_DIR, 'client_messages.log');
+
+// ログディレクトリが存在しない場合は作成
+if (!fs.existsSync(LOG_DIR)) {
+    fs.mkdirSync(LOG_DIR);
+}
 
 const wss = new WebSocket.Server({ server });
 
@@ -58,6 +67,14 @@ wss.on('connection', (ws, req) => {
                     
                     // 更新を全WebUIにブロードキャスト
                     broadcastToUI();
+
+                    // ログをファイルに保存
+                    fs.appendFile(CLIENT_LOG_FILE, JSON.stringify(data) + '\n', (err) => {
+                        if (err) {
+                            console.error('[Host] Failed to write log to file:', err);
+                        }
+                    });
+
                 } else {
                     console.warn('[Host] Received message without client name:', data);
                 }
